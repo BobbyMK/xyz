@@ -1,7 +1,6 @@
-from itertools import product
 from rest_framework import serializers
 
-from shop.models import Product, Cart, OrderItem, Order
+from shop.models import Product, OrderItem
 
 class ProductSerializer(serializers.ModelSerializer):
 

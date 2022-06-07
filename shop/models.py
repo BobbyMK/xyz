@@ -3,12 +3,11 @@ import datetime
 from django.db import models
 from django.db.models import Prefetch
 from django.conf import settings
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 from shop.common import calc_final_price, generate_vendor_code, get_sale_value
-from xyz.settings import SALE_VALUE
 
 
 class SingletonModel(models.Model):
@@ -28,6 +27,10 @@ class SingletonModel(models.Model):
 
 
 class Sale(SingletonModel):
+    """
+    Наследуем от SingletonModel, объект у нас будет только 1, создание
+    нового экземпляра, заменит предыдущий
+    """
     percent = models.PositiveSmallIntegerField(default=30, verbose_name='процент скидки',
         validators=[
             MinValueValidator(1,'Значение от 1 до 100'),
@@ -36,6 +39,7 @@ class Sale(SingletonModel):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # записываем в файл, чтобы лишний раз не идти в базу
         with open(settings.SALE_VALUE, 'w') as f:
             f.write(str(self.percent))
 
@@ -80,6 +84,10 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
+    """
+    Сущность, отображающая товар и его количество в корзине и в заказе.
+    У OrderItem в заказе bought=True, есть дата покупки, cart=None.
+    """
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, related_name='items')
     cart = models.ForeignKey(Cart, on_delete=models.SET_NULL, null=True, related_name='items')
     order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, related_name='items')
@@ -91,17 +99,21 @@ class OrderItem(models.Model):
     
     @property
     def total_cost(self):
+        # Общая стоимость позиции
         return self.count * self.price
 
 
 @receiver(post_save, sender=Sale)
 def sale_post_save(sender, instance, **kwargs):
+    # пересчитываем final_price, при каждом изменении Sale
     for product in Product.objects.all():
         product.final_price = calc_final_price(product.basic_price, instance.percent)
         product.save()
 
 @receiver(post_save, sender=Order)
 def order_post_save(sender, instance, **kwargs):
+    # Пересчитываем месячные показатели продаж и обзей стоимости
+    # NOTE: я бы завел periodic task в Celery, с запуском раз в день, например
     now = datetime.datetime.now()
     month_ago = now - datetime.timedelta(days=30)
     products = Product.objects.all().prefetch_related(

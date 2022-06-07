@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework import generics
-from rest_framework import permissions
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,6 +15,7 @@ from shop.common import get_sale_value
 class ProductList(generics.ListAPIView):
 
     serializer_class = ProductSerializer
+    permission_classes = (IsAuthenticated,)
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'catalog.html'
 
@@ -26,6 +27,7 @@ class ProductList(generics.ListAPIView):
 
 class OrderItemCreate(APIView):
 
+    permission_classes = (IsAuthenticated,)
     def post(self, request):
         cart = Cart.objects.get_or_create(user=request.user)[0]
         product = Product.objects.get(vendor_code=request.data['vendor_code'])
@@ -45,6 +47,7 @@ class OrderItemCreate(APIView):
 
 class ItemsInCartList(generics.ListAPIView):
 
+    permission_classes = (IsAuthenticated,)
     serializer_class = OrderItemSerializer
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'cart.html'
@@ -60,6 +63,7 @@ class ItemsInCartList(generics.ListAPIView):
 
 class OrderCreate(APIView):
 
+    permission_classes = (IsAuthenticated,)
     def post(self, request):
         cart = Cart.objects.get(user=request.user)
         order = Order.objects.create(user=request.user, cost=cart.total_amount)
@@ -76,6 +80,7 @@ class OrderCreate(APIView):
 
 class OrderList(generics.ListAPIView):
 
+    permission_classes = (IsAuthenticated,)
     serializer_class = OrderItemSerializer
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'orders_list.html'
