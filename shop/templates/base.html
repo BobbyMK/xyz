@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<head>
+    {% block title %}{% endblock %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <div class="header">
+        <ul>
+            <li><a href="{% url 'login' %}">Логин</a></li>
+            <li><a href="{% url 'catalog' %}">Каталог</a></li>
+            {% if not request.user.cart.total_amount %}
+            <li><a href="#">Корзина</a></li>
+            {% else %}
+            <li><a href="{% url 'cart' %}">Корзина</a></li>
+            {% endif %}
+            <li><a href="{% url 'orders_list' %}">История заказов</a></li>
+        </ul>  
+     </div>
+    {% block content %}{% endblock %}
+</body>
+</html>

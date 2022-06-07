@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}
+    <title>Корзина</title>
+{% endblock title %}
+
+{% block content %}
+<table>
+    <tr>
+        <th>Товар</th>
+        <th>Цена</th>
+        <th>Скидка</th>
+        <th>Количество</th>
+    </tr>
+    {% for item in items %}
+    <tr>
+        <td>
+        {{ item.product.title }}
+        </td>
+        <td>{{ item.price }}</td>
+        <td>{{ item.sale }}</td>
+        <td>{{ item.count }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<div>
+    <h3>Общая стоимость: {{ cart.total_amount }}</h3>
+    {% if not request.user.cart.total_amount %}
+    {% else %}
+    <form method="post" action="{% url 'create_order' %}" onsubmit="setTimeout(function () { window.location.reload(); }, 80)">
+    {% csrf_token %}
+    <input type="submit" value="Оформить заказ" style="height:50px; width:150px; margin-top:5px;">
+    </form>
+    {% endif %}
+</div>    
+
+
+{% endblock content %}

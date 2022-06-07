@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}
+    <title>История заказов</title>
+{% endblock title %}
+
+{% block content %}
+{% if not order_qs %}
+<h1>У вас нет ни одной покупки</h1>
+{% else %}
+{% for order in order_qs %}
+<table style="border: 1px solid black;">
+    <tr>
+        <th>Товар</th>
+        <th>Цена за единицу</th>
+        <th>Количество</th>
+        <th>Общая цена</th>
+    </tr>
+    {% for item in order.order_items %}
+    <tr>
+        <td>
+            <img src="{{ item.product.image.url }}" style="max-height: 80px; max-width:80px;margin:3px;">
+            {{ item.product.title }}
+        </td>
+        <td>{{ item.price }}</td>
+        <td>{{ item.count }}</td>
+        <td>{{ item.total_cost }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<div>
+    <h3>Стоимость заказа: {{ order.cost }}</h3>
+</div>    
+<br>
+<br>
+{% endfor %}
+{% endif %}
+
+{% endblock content %}

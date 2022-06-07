@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}
+    <title>Каталог</title>
+{% endblock title %}
+
+{% block content %}
+<table>
+    <tr>
+        <th>Товар</th>
+        <th>Цена</th>
+        <th>Скидка</th>
+        <th></th>
+    </tr>
+    {% for product in products %}
+    <tr>
+        <td>
+        <img src="{{ product.image.url }}" style="max-height: 80px; max-width:80px;margin:3px;">
+        {{ product.title }}
+        </td>
+        <td>{{ product.final_price }}</td>
+        <td>{{ sale }}</td>
+        <td>
+        <form method="post" onsubmit="setTimeout(function () { window.location.reload(); }, 80)" action="{% url 'create_item' %}">
+            {% csrf_token %}
+            <input type="hidden" name="vendor_code" value="{{ product.vendor_code }}">
+            <input type="submit" value="Купить" style="height:20px; width:60px; margin-top:5px;">
+        </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+{% endblock content %}
