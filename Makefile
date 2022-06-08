@@ -2,7 +2,7 @@
 ENV=testvenv/bin/python
 # путь к .sql файлу откуда будет происходить восстановление из бэкапа
 DB_BACKUP_DIR=backup
-DB_RESTORE_FILE=$(shell ls -1r $(DB_BACKUP_DIR)/*.json | head -n1)
+DB_RESTORE_FILE=$(shell ls -1r $(DB_BACKUP_DIR)/*.sql | head -n1)
 
 run-makemigrations:
 	# создать миграции
@@ -13,15 +13,15 @@ run-migrate:
 	$(ENV) manage.py migrate
 
 run-db-create:
-	# создаёт бд и роль bobby
-	psql -c "CREATE DATABASE xyz1;"
-	psql -c "CREATE USER bobby WITH PASSWORD '79759';"
-	psql -c "GRANT ALL PRIVILEGES ON DATABASE xyz1 TO bobby;"
-	psql -c "ALTER USER bobby CREATEDB;"
+	# создаёт бд и роль xyz_user
+	psql -c "CREATE DATABASE xyz;"
+	psql -c "CREATE USER xyz_user WITH PASSWORD 'xyz_password';"
+	psql -c "GRANT ALL PRIVILEGES ON DATABASE xyz TO xyz_user;"
+	psql -c "ALTER USER xyz_user CREATEDB;"
 
 run-db-restore: run-db-create
-	# создаёт бд и восстанавливает дамп из .json файла
-	psql -f $(DB_RESTORE_FILE) xyz1
+	# создаёт бд и восстанавливает дамп из .sql файла 
+	psql -f $(DB_RESTORE_FILE) xyz
 
 run-test:
 	# запустить тесты
@@ -31,11 +31,14 @@ run-venv-requirements:
 	# создает окружение и устанавливает туда зависимости
 	\
 	virtualenv testvenv; \
-	source testvenv/bin/activate; \
-	pip install -r requirements.txt; \
+	. testvenv/bin/activate; \
+	pip install -r requirements.txt;
+
+create-superuser:
+	echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'admin@myproject.com', 'password')" | $(ENV) manage.py shell
 
 run-server:
 	$(ENV) manage.py runserver
 
-run-start: run-venv-requirements run-db-restore run-makemigrations run-migrate run-test run-server
+run-start: run-venv-requirements run-db-restore run-makemigrations run-migrate run-test create-superuser run-server
 	# первый запуск проекта
