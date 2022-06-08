@@ -1,5 +1,5 @@
 # путь к python
-ENV=testvenv/bin/python
+ENV=venv/bin/python
 # путь к .sql файлу откуда будет происходить восстановление из бэкапа
 DB_BACKUP_DIR=backup
 DB_RESTORE_FILE=$(shell ls -1r $(DB_BACKUP_DIR)/*.sql | head -n1)
@@ -30,8 +30,8 @@ run-test:
 run-venv-requirements:
 	# создает окружение и устанавливает туда зависимости
 	\
-	virtualenv testvenv; \
-	. testvenv/bin/activate; \
+	virtualenv venv; \
+	. venv/bin/activate; \
 	pip install -r requirements.txt;
 
 create-superuser:
