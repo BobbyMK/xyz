@@ -76,11 +76,17 @@ class Cart(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     total_amount = models.IntegerField(verbose_name='Общая цена', default=0)
 
+    def __str__(self):
+        return f'Корзина {self.user.username}'
+
 
 
 class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     cost = models.IntegerField(verbose_name='Цена')
+
+    def __str__(self):
+        return f'Заказ №{self.id}'
 
 
 class OrderItem(models.Model):

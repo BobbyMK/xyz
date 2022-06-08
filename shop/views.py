@@ -33,10 +33,12 @@ class OrderItemCreate(APIView):
         product = Product.objects.get(vendor_code=request.data['vendor_code'])
         price = product.final_price
         sale = get_sale_value()
+
         try:
             item = OrderItem.objects.get(cart=cart, product=product)
         except OrderItem.DoesNotExist:
             item = OrderItem.objects.create(cart=cart, product=product, price=price, sale=sale)
+
         item.count += 1
         item.save()
         cart.total_amount += item.price
@@ -65,6 +67,8 @@ class OrderCreate(APIView):
 
     permission_classes = (IsAuthenticated,)
     def post(self, request):
+        # При покупке - убираем ссылку на корзину, добавляем - на заказ
+        # Сумму корзины обнуляем
         cart = Cart.objects.get(user=request.user)
         order = Order.objects.create(user=request.user, cost=cart.total_amount)
         for item in cart.items.all():
